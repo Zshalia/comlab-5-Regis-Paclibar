@@ -55,6 +55,8 @@ services:
   inventory-service:
     build: ./inventory-service
     container_name: inventory-service
+    ports:
+      - "3001:3001"
     environment:
       - BROKER_URL=amqp://guest:guest@message-broker:5672
     depends_on:
