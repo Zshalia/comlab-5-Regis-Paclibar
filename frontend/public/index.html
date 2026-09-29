@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5f2">
+  <title>Fieldwork Supply | Order Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; --ink:#172521; --muted:#687771; --line:#dbe2dd; --paper:#fbfcfa; --canvas:#f1f4f0; --green:#1f6b51; --green-dark:#174b3c; --lime:#d7ef82; --red:#a64737; }
+    * { box-sizing:border-box; }
+    body { min-width:320px; min-height:100vh; margin:0; color:var(--ink); background:var(--canvas); font-family:'DM Sans',sans-serif; }
+    .topline { height:7px; background:linear-gradient(90deg,var(--green) 0 34%,#9bbd77 34% 71%,#e4ebd7 71%); }
+    header { height:70px; display:flex; align-items:center; justify-content:space-between; padding:0 6vw; border-bottom:1px solid var(--line); background:rgba(251,252,250,.88); }
+    .brand { display:flex; align-items:center; gap:12px; font:800 16px Manrope,sans-serif; letter-spacing:0; }
+    .brand-mark { width:30px; height:30px; display:grid; place-items:center; color:#fff; background:var(--green); border-radius:4px; font:700 14px 'DM Mono',monospace; }
+    .brand small { display:block; margin-top:2px; color:var(--muted); font:500 10px 'DM Mono',monospace; text-transform:uppercase; }
+    .header-status { display:flex; align-items:center; gap:9px; color:#3d594d; font:500 11px 'DM Mono',monospace; text-transform:uppercase; }
+    .dot { width:8px; height:8px; border-radius:50%; background:#63a47d; box-shadow:0 0 0 3px #e4f0e7; }
+    main { max-width:1120px; margin:auto; padding:54px 28px 72px; }
+    .eyebrow { color:var(--green); font:500 11px 'DM Mono',monospace; letter-spacing:0; text-transform:uppercase; }
+    h1 { max-width:720px; margin:10px 0 8px; font:800 38px/1.12 Manrope,sans-serif; letter-spacing:0; }
+    .intro { margin:0; color:var(--muted); font-size:15px; }
+    .workspace { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr); gap:42px; margin-top:38px; align-items:start; }
+    .section-head { display:flex; align-items:baseline; justify-content:space-between; padding:0 0 14px; border-bottom:1px solid var(--line); }
+    h2 { margin:0; font:700 16px Manrope,sans-serif; }
+    .mono { color:var(--muted); font:400 11px 'DM Mono',monospace; }
+    .product { display:grid; grid-template-columns:48px minmax(0,1fr) auto; gap:14px; align-items:center; padding:17px 0; border-bottom:1px solid var(--line); }
+    .product-icon { width:44px; height:44px; display:grid; place-items:center; background:#e4ece3; border-radius:4px; color:var(--green-dark); font:500 14px 'DM Mono',monospace; }
+    .product h3 { margin:0 0 4px; font-size:14px; font-weight:700; }
+    .product p { margin:0; color:var(--muted); font:400 11px 'DM Mono',monospace; }
+    .price { text-align:right; font:500 13px 'DM Mono',monospace; }
+    .price small { display:block; margin-top:4px; color:var(--muted); font-size:10px; }
+    .order-panel { padding:22px; background:var(--paper); border:1px solid var(--line); border-top:3px solid var(--green); }
+    .panel-title { display:flex; justify-content:space-between; align-items:center; padding-bottom:17px; border-bottom:1px solid var(--line); }
+    .step { color:var(--green); font:500 11px 'DM Mono',monospace; }
+    label { display:block; margin:18px 0 7px; color:#45554e; font:500 11px 'DM Mono',monospace; text-transform:uppercase; }
+    select,input { width:100%; height:43px; padding:0 12px; border:1px solid #cbd6cf; border-radius:3px; color:var(--ink); background:#fff; font:500 13px 'DM Sans',sans-serif; }
+    select:focus,input:focus { outline:2px solid #a9c8ae; outline-offset:1px; }
+    .quantity-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .total { display:flex; justify-content:space-between; margin-top:22px; padding-top:16px; border-top:1px solid var(--line); align-items:baseline; }
+    .total strong { font:700 23px Manrope,sans-serif; }
+    button { width:100%; height:46px; margin-top:18px; border:0; border-radius:3px; color:#fff; background:var(--green); font:700 13px Manrope,sans-serif; cursor:pointer; transition:background .16s,transform .16s; }
+    button:hover { background:var(--green-dark); transform:translateY(-1px); }
+    button:disabled { background:#8ca59a; cursor:wait; transform:none; }
+    .result { display:none; margin-top:14px; padding:12px; border-radius:3px; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+    .result.show { display:block; animation:reveal .25s ease-out; }
+    .result.success { color:#214d37; background:#e8f3e9; border:1px solid #c6dfcb; }
+    .result.error { color:#78372e; background:#fbefeb; border:1px solid #ebcfc7; }
+    .footnote { margin:18px 0 0; color:var(--muted); font:400 10px/1.6 'DM Mono',monospace; }
+    footer { display:flex; justify-content:space-between; gap:20px; margin-top:52px; padding-top:17px; border-top:1px solid var(--line); color:var(--muted); font:400 10px 'DM Mono',monospace; }
+    @keyframes reveal { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+    @media(max-width:720px) { header { padding:0 20px; } main { padding:38px 20px 52px; } h1 { font-size:32px; } .workspace { grid-template-columns:1fr; gap:30px; margin-top:29px; } .product { grid-template-columns:44px minmax(0,1fr) auto; gap:10px; } footer { flex-direction:column; gap:7px; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+  </style>
+</head>
+<body>
+  <div class="topline"></div>
+  <header>
+    <div class="brand"><span class="brand-mark">F/</span><span>FIELDWORK SUPPLY<small>Inventory desk · West warehouse</small></span></div>
+    <div class="header-status"><span class="dot"></span> Order system online</div>
+  </header>
+  <main>
+    <div class="eyebrow">Fulfillment / New order</div>
+    <h1>Build an order.<br>We’ll handle the handoff.</h1>
+    <p class="intro">Choose stock, reserve it, and send the order into fulfillment.</p>
+    <div class="workspace">
+      <section aria-labelledby="catalog-heading">
+        <div class="section-head"><h2 id="catalog-heading">Warehouse catalog</h2><span class="mono">2 stocked items</span></div>
+        <article class="product"><div class="product-icon">01</div><div><h3>Field notebook</h3><p>SKU-001 · Recycled grid paper</p></div><div class="price">$10.00<small>per unit</small></div></article>
+        <article class="product"><div class="product-icon">02</div><div><h3>Utility flask</h3><p>SKU-002 · Brushed steel, 500 ml</p></div><div class="price">$18.00<small>per unit</small></div></article>
+        <footer><span>Stock is checked when the order is submitted.</span><span>FIELDWORK / OPS</span></footer>
+      </section>
+      <form id="order-form" class="order-panel">
+        <div class="panel-title"><h2>Order details</h2><span class="step">01 / 01</span></div>
+        <label for="sku">Item</label>
+        <select id="sku" name="sku"><option value="SKU-001" data-price="10">Field notebook · $10.00</option><option value="SKU-002" data-price="18">Utility flask · $18.00</option></select>
+        <div class="quantity-row"><div><label for="quantity">Quantity</label><input id="quantity" name="quantity" type="number" min="1" max="99" value="1" required></div><div><label for="customer">Customer</label><input id="customer" name="customer" type="text" placeholder="Optional"></div></div>
+        <div class="total"><span class="mono">ORDER TOTAL</span><strong id="total">$10.00</strong></div>
+        <button id="submit" type="submit">Reserve &amp; place order</button>
+        <div id="result" class="result" role="status" aria-live="polite"></div>
+        <p class="footnote">Inventory is reserved before an order event is published. Successful payment is confirmed by the notification service.</p>
+      </form>
+    </div>
+  </main>
+  <script>
+    const form = document.querySelector('#order-form');
+    const sku = document.querySelector('#sku');
+    const quantity = document.querySelector('#quantity');
+    const total = document.querySelector('#total');
+    const button = document.querySelector('#submit');
+    const result = document.querySelector('#result');
+
+    function updateTotal() {
+      const price = Number(sku.selectedOptions[0].dataset.price);
+      const count = Math.max(1, Number(quantity.value) || 1);
+      total.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price * count);
+    }
+
+    sku.addEventListener('change', updateTotal);
+    quantity.addEventListener('input', updateTotal);
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const count = Number(quantity.value);
+      if (!Number.isInteger(count) || count < 1) return;
+      const amount = Number(sku.selectedOptions[0].dataset.price) * count;
+      button.disabled = true;
+      button.textContent = 'Checking stock…';
+      result.className = 'result';
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: [{ sku: sku.value, quantity: count }], totalAmount: amount, customer: document.querySelector('#customer').value || null })
+        });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || 'The order could not be placed.');
+        result.className = 'result show success';
+        result.textContent = `Order ${body.order.orderId} placed. ${body.order.inventory[0].remaining} units remain in stock.`;
+        quantity.value = 1;
+        updateTotal();
+      } catch (error) {
+        result.className = 'result show error';
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'Reserve &amp; place order';
+      }
+    });
+  </script>
+</body>
+</html>

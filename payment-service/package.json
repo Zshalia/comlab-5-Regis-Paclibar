@@ -1,0 +1,13 @@
+{
+  "name": "payment-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RabbitMQ payment event processor",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.8"
+  }
+}

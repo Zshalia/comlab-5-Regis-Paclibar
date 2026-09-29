@@ -1,0 +1,71 @@
+networks:
+  shop-network:
+    driver: bridge
+
+services:
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    networks:
+      - shop-network
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      - ORDER_SERVICE_URL=http://order-service:3000
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      - order-service
+    networks:
+      - shop-network
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    environment:
+      - BROKER_URL=amqp://guest:guest@message-broker:5672
+    depends_on:
+      - message-broker
+    networks:
+      - shop-network
+  message-broker:
+    image: rabbitmq:3-management
+    container_name: message-broker
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - shop-network
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    environment:
+      - BROKER_URL=amqp://guest:guest@message-broker:5672
+    depends_on:
+      - message-broker
+    networks:
+      - shop-network
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    environment:
+      - BROKER_URL=amqp://guest:guest@message-broker:5672
+    depends_on:
+      - message-broker
+    networks:
+      - shop-network
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    environment:
+      - BROKER_URL=amqp://guest:guest@message-broker:5672
+    depends_on:
+      - message-broker
+    networks:
+      - shop-network
