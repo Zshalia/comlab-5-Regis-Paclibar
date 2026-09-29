@@ -3,7 +3,8 @@
 const http = require('node:http');
 
 const port = Number(process.env.PORT || 8080);
-const upstream = new URL(process.env.ORDER_SERVICE_URL || 'http://localhost:3000');
+const orderUpstream = new URL(process.env.ORDER_SERVICE_URL || 'http://localhost:3000');
+const inventoryUpstream = new URL(process.env.INVENTORY_SERVICE_URL || 'http://localhost:3001');
 const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
 
 const server = http.createServer((request, response) => {
@@ -17,7 +18,9 @@ const server = http.createServer((request, response) => {
 		return;
 	}
 
-	if (!['/orders', '/health'].includes(new URL(request.url, 'http://gateway').pathname)) {
+	const pathname = new URL(request.url, 'http://gateway').pathname;
+	const upstream = pathname === '/inventory' ? inventoryUpstream : orderUpstream;
+	if (!['/orders', '/health', '/inventory'].includes(pathname)) {
 		response.writeHead(404, { 'content-type': 'application/json' });
 		response.end(JSON.stringify({ error: 'Not found' }));
 		return;

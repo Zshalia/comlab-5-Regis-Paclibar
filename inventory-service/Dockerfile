@@ -9,6 +9,8 @@ RUN if [ -s package.json ]; then npm install --omit=dev; fi
 
 COPY . .
 
+EXPOSE 3001
+
 USER node
 
 CMD ["node", "index.js"]

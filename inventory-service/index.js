@@ -1,9 +1,11 @@
 'use strict';
 
 const amqp = require('amqplib');
+const http = require('node:http');
 
 const brokerUrl = process.env.BROKER_URL || 'amqp://guest:guest@localhost:5672';
 const queueName = process.env.INVENTORY_QUEUE || 'inventory_queue';
+const port = Number(process.env.PORT || 3001);
 const initialStock = process.env.INITIAL_STOCK || '{"SKU-001":100,"SKU-002":100}';
 
 let stock;
@@ -21,6 +23,27 @@ let connection;
 let channel;
 let reconnectTimer;
 let stopping = false;
+let server;
+
+function startInventoryApi() {
+	server = http.createServer((request, response) => {
+		if (request.method === 'GET' && request.url === '/inventory') {
+			response.writeHead(200, { 'content-type': 'application/json' });
+			response.end(JSON.stringify({ items: Object.entries(stock).map(([sku, quantity]) => ({ sku, quantity })) }));
+			return;
+		}
+
+		if (request.method === 'GET' && request.url === '/health') {
+			response.writeHead(200, { 'content-type': 'application/json' });
+			response.end(JSON.stringify({ status: 'ok', brokerConnected: Boolean(channel) }));
+			return;
+		}
+
+		response.writeHead(404, { 'content-type': 'application/json' });
+		response.end(JSON.stringify({ error: 'Not found' }));
+	});
+	server.listen(port, '0.0.0.0', () => console.log(`Inventory API listening on port ${port}`));
+}
 
 function reserveItems(order) {
 	if (!order || !Array.isArray(order.items) || order.items.length === 0) {
@@ -116,6 +139,7 @@ async function connect() {
 async function shutdown() {
 	stopping = true;
 	clearTimeout(reconnectTimer);
+	if (server) await new Promise((resolve) => server.close(resolve));
 	if (channel) await channel.close().catch(() => {});
 	if (connection) await connection.close().catch(() => {});
 	process.exit(0);
@@ -124,4 +148,5 @@ async function shutdown() {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
+startInventoryApi();
 connect();

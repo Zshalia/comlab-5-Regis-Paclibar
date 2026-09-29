@@ -31,6 +31,8 @@
     .product-icon { width:44px; height:44px; display:grid; place-items:center; background:#e4ece3; border-radius:4px; color:var(--green-dark); font:500 14px 'DM Mono',monospace; }
     .product h3 { margin:0 0 4px; font-size:14px; font-weight:700; }
     .product p { margin:0; color:var(--muted); font:400 11px 'DM Mono',monospace; }
+    .product .stock-count { display:inline-block; margin-top:6px; color:var(--green); font:500 10px 'DM Mono',monospace; }
+    .product .stock-count.low { color:var(--red); }
     .price { text-align:right; font:500 13px 'DM Mono',monospace; }
     .price small { display:block; margin-top:4px; color:var(--muted); font-size:10px; }
     .order-panel { padding:22px; background:var(--paper); border:1px solid var(--line); border-top:3px solid var(--green); }
@@ -68,10 +70,10 @@
     <p class="intro">Choose stock, reserve it, and send the order into fulfillment.</p>
     <div class="workspace">
       <section aria-labelledby="catalog-heading">
-        <div class="section-head"><h2 id="catalog-heading">Warehouse catalog</h2><span class="mono">2 stocked items</span></div>
-        <article class="product"><div class="product-icon">01</div><div><h3>Field notebook</h3><p>SKU-001 · Recycled grid paper</p></div><div class="price">$10.00<small>per unit</small></div></article>
-        <article class="product"><div class="product-icon">02</div><div><h3>Utility flask</h3><p>SKU-002 · Brushed steel, 500 ml</p></div><div class="price">$18.00<small>per unit</small></div></article>
-        <footer><span>Stock is checked when the order is submitted.</span><span>FIELDWORK / OPS</span></footer>
+        <div class="section-head"><h2 id="catalog-heading">Live inventory</h2><span id="inventory-status" class="mono">Loading stock…</span></div>
+        <article class="product"><div class="product-icon">01</div><div><h3>Field notebook</h3><p>SKU-001 · Recycled grid paper</p><span class="stock-count" data-stock-sku="SKU-001">Loading…</span></div><div class="price">$10.00<small>per unit</small></div></article>
+        <article class="product"><div class="product-icon">02</div><div><h3>Utility flask</h3><p>SKU-002 · Brushed steel, 500 ml</p><span class="stock-count" data-stock-sku="SKU-002">Loading…</span></div><div class="price">$18.00<small>per unit</small></div></article>
+        <footer><span>Available stock updates after each reservation.</span><span>FIELDWORK / OPS</span></footer>
       </section>
       <form id="order-form" class="order-panel">
         <div class="panel-title"><h2>Order details</h2><span class="step">01 / 01</span></div>
@@ -92,6 +94,28 @@
     const total = document.querySelector('#total');
     const button = document.querySelector('#submit');
     const result = document.querySelector('#result');
+    const inventoryStatus = document.querySelector('#inventory-status');
+
+    async function loadInventory() {
+      try {
+        const response = await fetch('/api/inventory');
+        if (!response.ok) throw new Error('Inventory unavailable');
+        const inventory = await response.json();
+        for (const item of inventory.items) {
+          const stockLabel = document.querySelector(`[data-stock-sku="${item.sku}"]`);
+          if (!stockLabel) continue;
+          stockLabel.textContent = `${item.quantity} units available`;
+          stockLabel.classList.toggle('low', item.quantity < 10);
+        }
+        inventoryStatus.textContent = `${inventory.items.length} stocked items`;
+      } catch {
+        inventoryStatus.textContent = 'Stock unavailable';
+        document.querySelectorAll('[data-stock-sku]').forEach((label) => {
+          label.textContent = 'Could not load stock';
+          label.classList.add('low');
+        });
+      }
+    }
 
     function updateTotal() {
       const price = Number(sku.selectedOptions[0].dataset.price);
@@ -101,6 +125,7 @@
 
     sku.addEventListener('change', updateTotal);
     quantity.addEventListener('input', updateTotal);
+    loadInventory();
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -120,6 +145,7 @@
         if (!response.ok) throw new Error(body.error || 'The order could not be placed.');
         result.className = 'result show success';
         result.textContent = `Order ${body.order.orderId} placed. ${body.order.inventory[0].remaining} units remain in stock.`;
+        loadInventory();
         quantity.value = 1;
         updateTotal();
       } catch (error) {
